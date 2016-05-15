@@ -1,0 +1,229 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html>
+<head>
+        <meta charset="UTF-8">
+        <title>vSphere Linux Client</title>
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
+        <link href="{% static "css/main.css" %}" rel="stylesheet" media="all">
+	{% block script %}
+	{% endblock %}
+</head>
+<body link="black" alink="black" vlink="black">
+        <div class="upper-panel">
+		<div class="menu-item" id="file-button">
+			<span class="item-item">File</span>
+				<ul style="width: 45px;">
+      				<li style="margin-top: 3px; margin-bottom: 3px;"><a href="/auth/logout/">Exit</a></li>
+    				</ul>
+		</div>
+		<div class="menu-item" id="view-button">
+			<span class="item-item">View</span>
+                                <ul style="width: 120px;">
+					<li style="margin-top: 3px; margin-bottom: 4px; padding-left: 6px;">Back</li>
+					<li style="margin-bottom: 4px; padding-left: 6px;">Forward</li>
+      					<li style="margin-bottom: 4px; padding-left: 6px;">Home</li>
+					<li style="background-color: #bdbdbd;
+    						height: 1px;
+    						margin-top: 6px;
+    						margin-bottom: 3px;"></li>
+                                        <li style="margin-bottom: 3px; padding-left: 6px;">Administration<img src="{% static "img/next-menu-point.png" %}" id="image" style="margin-left: 25px; margin-bottom: 3px;"></li>
+    				</ul>
+		</div>
+		<div class="menu-item" id="inventory-button">
+			<span class="item-item">Inventory</span>
+                                <ul style="width: 92px;">
+                                        <li style="margin-top: 3px; margin-bottom: 3px; padding-left: 32px;">Host<img src="{% static "img/next-menu-point.png" %}" id="image" style="margin-left: 25px; margin-bottom: 3px;"></li>
+                                </ul>
+		</div>
+  		<div class="menu-item">
+			<span class="item-item">Help</span>
+                                <ul style="width: 160px;">
+                                        <li style="margin-top: 3px; margin-bottom: 3px; padding-left: 10px;">About VMware vSphere</li>
+                                </ul>
+                </div>
+        </div>
+        <div class="navigation-panel">
+                <a href="javascript:history.back()"><img src="{% static "img/back.png" %}" id="image"></a>
+                <a href="javascript:history.forward()"><img src="{% static "img/forward.png" %}" id="image"></a>
+                <div class="menu"><a href="/vsphclient/home/"><img src="{% static "img/home.png" %}" id="image">Home</a>
+		{% block navigation %}
+		{% endblock %}	
+                </div>
+        </div>
+        <div class="main-area">
+        {% block main-area %}
+        {% endblock %}
+        </div>
+	<div class="bottom-area"><span>Recent tasks</span>
+        {% block recent-tasks %}
+        {% endblock %}	
+	</div>
+
+<script>
+$('.vm-state-start').on('mouseover', function() {
+        $(this).addClass('active-mouse');
+});
+
+$('.vm-state-start').on('mouseout', function() {
+        $(this).removeClass('active-mouse');
+});
+
+$('.vm-state-stop').on('mouseover', function() {
+        $(this).addClass('active-mouse');
+});
+
+$('.vm-state-stop').on('mouseout', function() {
+        $(this).removeClass('active-mouse');
+});
+
+$('.vm-state-suspend').on('mouseover', function() {
+        $(this).addClass('active-mouse');
+});
+
+$('.vm-state-suspend').on('mouseout', function() {
+        $(this).removeClass('active-mouse');
+});
+
+$('.vm-state-reset').on('mouseover', function() {
+        $(this).addClass('active-mouse');
+});
+
+$('.vm-state-reset').on('mouseout', function() {
+        $(this).removeClass('active-mouse');
+});
+
+var vmid;
+var prev2;
+$('.item').on('click', function() {
+	vmid = $(this).data('vmid');
+        if (prev2 != undefined) {
+                prev2.removeClass('active');
+        }
+        $(this).addClass('active');
+        prev2 = $(this);
+});
+
+$('.toggle-link').on('click', function() {
+	$(this).toggleClass('active');
+	$(this).next('.toggle-content').slideToggle(100);
+});
+
+var prev3;
+$('.menu-item span').on('click', function() {
+        var $el = $(this).parent('.menu-item');
+        if($el.hasClass('active')) {
+                $el.removeClass('active');
+        } else {
+                if(prev3 != undefined) {
+                        prev3.parent('.menu-item').removeClass('active');
+                }
+                prev3 = $(this);
+                $el.addClass('active');
+        }
+        prev3 = $(this);
+});
+
+$('.item-item').on('mouseover', function() {
+        $(this).addClass('active');
+});
+
+$('.item-item').on('mouseout', function() {
+        $(this).removeClass('active');
+});
+
+$('.vm-state-stop').on('click', function() {
+        $(this).addClass('active');
+
+        $.ajax({
+          method: 'POST',
+          url: '/vsphclient/stopmachine/',
+          data: {'machine_id': vmid},
+          success: function (data) {
+            alert("Virtual machine was successfully stopped.");
+          },
+          error: function (data) {
+            alert("ERROR: Something was going wrong while stopping virtual machine.");
+          }
+        });
+});
+
+$('.vm-state-start').on('click', function() {
+        $(this).addClass('active');
+
+        $.ajax({
+          method: 'POST',
+          url: '/vsphclient/startmachine/',
+          data: {'machine_id': vmid},
+          success: function (data) {
+            alert("Virtual machine was successfully started.");
+          },
+          error: function (data) {
+            alert("ERROR: Something was going wrong while starting virtual machine.");
+          }
+        });
+});
+
+$('.vm-state-suspend').on('click', function() {
+        $(this).addClass('active');
+
+        $.ajax({
+          method: 'POST',
+          url: '/vsphclient/suspendmachine/',
+          data: {'machine_id': vmid},
+          success: function (data) {
+            alert("Virtual machine was successfully suspended.");
+          },
+          error: function (data) {
+            alert("ERROR: Something was going wrong while suspending virtual machine.");
+          }
+        });
+});
+
+$('.vm-state-reset').on('click', function() {
+        $(this).addClass('active');
+
+        $.ajax({
+          method: 'POST',
+          url: '/vsphclient/resetmachine/',
+          data: {'machine_id': vmid},
+          success: function (data) {
+            alert("Virtual machine was successfully reseted.");
+          },
+          error: function (data) {
+            alert("ERROR: Something was going wrong while reseting virtual machine.");
+          }
+        });
+});
+
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie != '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+var csrftoken = getCookie('csrftoken');
+
+function csrfSafeMethod(method) {
+    // these HTTP methods do not require CSRF protection
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+}
+
+$.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+        if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+        }
+    }
+});
+</script>
+</body>

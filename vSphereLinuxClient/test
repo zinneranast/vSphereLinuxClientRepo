@@ -1,0 +1,48 @@
+#!/usr/bin/python3.4
+import subprocess
+import re
+
+
+def getVMs():
+    vmIds = []
+    cmd = """ssh root@192.168.1.101 'vim-cmd vmsvc/getallvms' | awk '{print $1}' | sed 1d"""
+    getVmIds = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
+    for line in getVmIds.stdout.readlines():
+        line = line.strip()
+        if line:
+            vmIds.append(line.decode('cp866'))
+
+    virtMachines = []
+    cmd = """ssh root@192.168.1.101 'vim-cmd vmsvc/getallvms' | awk -F[ '{print $1}' | sed 1d | awk '{$1=""; print $0}' | sed 's/[ \t]*$//'"""
+    getVirtMachines = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
+    for line in getVirtMachines.stdout.readlines():
+        line = line.strip()
+        if line:
+            virtMachines.append(line.decode('cp866'))
+
+    runVms = []
+    cmd = "esxcli --config /home/zinner/graduate-work/session.cfg vm process list"
+    getRunVms = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
+    for line in getRunVms.stdout.readlines()[0::8]:
+        line = line.strip()
+        if line:
+            runVms.append(line.decode('cp866'))
+    
+    print("run vms\n\n", runVms, "\n\n\n")
+
+    vmStates = {}
+    vmId = {}
+    k = 0
+    for i in virtMachines:
+        for j in runVms:
+            if i == j:
+                vmStates[virtMachines[k]] = 'Powered on'
+                print("ura!")
+            else:
+                vmStates[virtMachines[k]] = 'Powered off'
+        vmId[virtMachines[k]] = vmIds[k]
+        k += 1
+
+    return virtMachines, vmId
+
+vmStates, vmId = getVMs()

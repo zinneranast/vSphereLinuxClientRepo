@@ -1,0 +1,21 @@
+{% load staticfiles %}
+
+<!DOCTYPE html>
+<html>
+<head>
+        <meta charset="UTF-8">
+        <title>vSphere Linux Client</title>
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
+        <link href="{% static "css/main.css" %}" rel="stylesheet" media="all">
+        {% block script %}
+        {% endblock %}
+</head>
+<body link="black" alink="black" vlink="black" style="background-color: white;">
+	<div class="login-up-box">
+		<div style="background-color: #4c6d96; height: 126px; border: 1px solid #5e8dc9;">
+			<img src="{% static "img/vmware-text.png" %}" id="image" style="margin-left: 20px; margin-top: 10px;">
+			<img src="{% static "img/vmware-logo.png" %}" id="image" style="float: right; margin-right: 20px; margin-top: 10px;">
+		</div>
+   		<p style="margin-left: 20px;" class="error-list"><b>Dear {{ username }}, your account is temporarily blocked. Please try later or contact the administrator.</b></p>
+	</div>
+</body>

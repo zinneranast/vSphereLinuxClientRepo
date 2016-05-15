@@ -1,0 +1,37 @@
+#!/usr/bin/python3.4
+import subprocess
+import re
+
+
+def getVMs():
+    vmIds = []
+    cmd = """ssh root@192.168.1.101 'vim-cmd vmsvc/getallvms' | awk '{print $1}'"""
+    getVmIds = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
+    for line in getVmIds.stdout.readlines()[1::]:
+        line = line.strip()
+        if line:
+            vmIds.append(line.decode('cp866'))
+
+    virtMachines = []
+    cmd = """ssh root@192.168.1.101 'vim-cmd vmsvc/getallvms' | awk '{print $2}'"""
+    getVirtMachines = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
+    for line in getVirtMachines.stdout.readlines()[1::]:
+        line = line.strip()
+        if line:
+            virtMachines.append(line.decode('cp866'))
+
+    vmStates = {}
+    vmId = {}
+#    k = 0
+#    for i in vmIds:
+#        cmd = """ssh root@192.168.1.101 'vim-cmd vmsvc/power.getstate %s'""" % i
+#        getState = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
+#        state = getState.stdout.readlines()[1].decode('cp866')
+#        vmStates[virtMachines[k]] = state
+#        vmId[virtMachines[k]] = vmIds[k]
+#        k += 1
+
+    print(virtMachines, vmIds)
+    return virtMachines, vmIds
+
+vmStates, vmId = getVMs()
