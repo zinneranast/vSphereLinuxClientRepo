@@ -12,4 +12,5 @@ urlpatterns = [
     url(r'^stopmachine/$', views.stopmachine, name='stopmachine'),
     url(r'^suspendmachine/$', views.suspendmachine, name='suspendmachine'),
     url(r'^resetmachine/$', views.resetmachine, name='resetmachine'),
+    url(r'^takesnapshot/$', views.takesnapshot, name='takesnapshot')
 ]
