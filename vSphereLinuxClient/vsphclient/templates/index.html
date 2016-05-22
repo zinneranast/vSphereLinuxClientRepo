@@ -9,27 +9,35 @@
 {% block main-area %}
 <div class="vm-control-panel">
 {% if group != 'Read-only' %}
-<span class="vm-state-stop"><img src="{% static "img/stop.png" %}" id="image"></span>
-<span class="vm-state-suspend"><img src="{% static "img/suspend.png" %}" id="image"></span>
-<span class="vm-state-start"><img src="{% static "img/start.png" %}" id="image"></span>
-<span class="vm-state-reset"><img src="{% static "img/reset.png" %}" id="image"></span>
-<div class="v-line"></div>
-<span class="take-snapshot"><img src="{% static "img/take-snapshot.png" %}" id="image"></span>
-<span class="revert-snapshot"><img src="{% static "img/revert-to-snapshot.png" %}" id="image"></span>
-<span class="manager-snapshot"><img src="{% static "img/snapshot-manager.png" %}" id="image"></span>
+	<span class="vm-state-stop"><img src="{% static "img/stop.png" %}" id="image"></span>
+	<span class="vm-state-suspend"><img src="{% static "img/suspend.png" %}" id="image"></span>
+	<span class="vm-state-start"><img src="{% static "img/start.png" %}" id="image"></span>
+	<span class="vm-state-reset"><img src="{% static "img/reset.png" %}" id="image"></span>
+	<div class="v-line"></div>
+	<span class="take-snapshot"><img src="{% static "img/take-snapshot.png" %}" id="image"></span>
+	<span class="revert-snapshot"><img src="{% static "img/revert-to-snapshot-active.png" %}" id="image"></span>
+	<span class="manager-snapshot"><img src="{% static "img/snapshot-manager.png" %}" id="image"></span>
 {% else %}
-<span class="vm-state"><img src="{% static "img/stop.png" %}" id="image"></span>
-<span class="vm-state"><img src="{% static "img/suspend.png" %}" id="image"></span>
-<span class="vm-state"><img src="{% static "img/start.png" %}" id="image"></span>
-<span class="vm-state"><img src="{% static "img/reset.png" %}" id="image"></span>
-<div class="v-line"></div>
-<span class="vm-state; take-snapshot"><img src="{% static "img/take-snapshot.png" %}" id="image"></span>
-<span class="vm-state"><img src="{% static "img/revert-to-snapshot.png" %}" id="image"></span>
-<span class="vm-state"><img src="{% static "img/snapshot-manager.png" %}" id="image"></span>
+	<span class="vm-state"><img src="{% static "img/stop.png" %}" id="image"></span>
+	<span class="vm-state"><img src="{% static "img/suspend.png" %}" id="image"></span>
+	<span class="vm-state"><img src="{% static "img/start.png" %}" id="image"></span>
+	<span class="vm-state"><img src="{% static "img/reset.png" %}" id="image"></span>
+	<div class="v-line"></div>
+	<span class="vm-state; take-snapshot"><img src="{% static "img/take-snapshot.png" %}" id="image"></span>
+	{% if has_snapshot %}
+		{% if "1" in has_snapshot %}
+		<span class="vm-state"><img src="{% static "img/revert-to-snapshot-active.png" %}" id="image"></span>
+		{% else %}
+		<span class="vm-state"><img src="{% static "img/revert-to-snapshot-passive.png" %}" id="image"></span>
+		{% endif %}
+	{% else %}
+		<span class="vm-state"><img src="{% static "img/revert-to-snapshot-active.png" %}" id="image"></span>
+	{% endif %}
+	<span class="vm-state"><img src="{% static "img/snapshot-manager.png" %}" id="image"></span>
 {% endif %}
 </div>
 
-<form action="/vsphclient/takesnapshot/" method="takesnapshot" id="snapshot-form">
+<form action="/vsphclient/takesnapshot/" method="takesnapshot" id="create-snapshot-form" name="Take Virtual Machine Snapshot">
 	{% csrf_token %}
 	<label>Name</label>
 	<p><input type="text" name="snapshot_name" class="input"></p>
@@ -37,6 +45,18 @@
         <p><textarea name="snapshot_description"></textarea></p>
 	{% if empty_field %}
 	<label class="label" style="color: red">{{ empty_field }}</label>
+	{% endif %}
+</form>
+
+<form action="/vsphclient/revertsnapshot/" method="revertsnapshot" id="revert-snapshot-form" name="Confirm">
+	{% csrf_token %}
+	<p><img src="{% static "img/alert.png" %}" id="image-alert">Current state of the Virtual Machine will be lost unless it has been saved in a snapshot. Revert to current (most recent) snapshot?</p>
+</form>
+
+<form action="/vsphclient/managersnapshot/" method="managersnapshot" id="manager-snapshot-form" name="Snapshots for Virtual Machine">
+	{% csrf_token %}
+	{% if has_snapshot %}
+	<span class="snapshot-info"></span>
 	{% endif %}
 </form>
 
@@ -48,13 +68,17 @@
 			{% for key, value in virt_states.items %}
 				{% if "Powered on" in value %}
     			<img src="{% static "img/vm-on.png" %}" id="image">
-				{% else %}
-				<img src="{% static "img/vm-off.png" %}" id="image">
 				{% endif %}
+				{% if "Powered off" in value %}
+				<img src="{% static "img/vm-off.png" %}" id="image">		
+				{% endif %}		
+				{% if "Suspend" in value %}
+				<img src="{% static "img/vm-pause.png" %}" id="image">	
+				{% endif %}	
 				{% for key1, value1 in virt_ids.items %}
 					{% if key1 == key %}
 						{% if group != "Read-only" %}
-						<span class="item" data-vmid={{ value1 }}>{{ key }}</span><br>
+						<span class="item" data-vmid={{ value1 }} data-vmname={{ key }}>{{ key }}</span><br>
 						{% else %}
 						<span class="item-readonly">{{ key }}</span><br>
 						{% endif %}
@@ -82,9 +106,9 @@
 {% endblock %}
 
 {% block recent-tasks %}
-<div class="command-history">
-{% for i in result %}
-<p>{{ i }}</p>
+<div class="operation-history">
+{% for i in operation_history %}
+{{ i }}<br>
 {% endfor %}
 </div>
 {% endblock %}

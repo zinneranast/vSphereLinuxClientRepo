@@ -1,0 +1,275 @@
+@charset "utf-8";
+@font-face {
+	font-family: "Microsoft New Tai Lui";
+	src: url('fonts/ntailu.ttf') format('truetype'); 
+ 	font-style: normal;
+  	font-weight: normal;
+}
+
+body {
+	margin-top: auto;
+    	margin-left: auto;
+    	font-size: 12px;
+	font-family: "Microsoft New Tai Lui", Ebrima;
+	background: #f0f0f0;
+}
+
+a { 
+    	text-decoration: none;
+ } 
+
+.upper-panel {
+	margin-top: 4px;
+ 	margin-left: 10px;
+	width: 100%;
+	height: 26px;
+}
+
+#file-button {
+	display: inline-block;
+	width: 28px;
+}
+
+#view-button {
+	display: inline-block;
+	width: 38px;
+}
+
+#inventory-button {
+        display: inline-block;
+        width: 58px;
+}
+
+#administration-button {
+	display: inline-block;
+	width: 84px;
+}
+
+.item {
+  	cursor: pointer;
+}
+
+.item-readonly {
+        cursor: pointer;
+}
+
+.item.active {
+        background-color: #b0c4de;
+        border: 1px solid #4682b4;
+}
+
+.vm-state, .vm-state-start, .vm-state-stop, .vm-state-suspend, .vm-state-reset {
+        display: inline-block;
+        cursor: pointer;
+}
+
+.vm-state-start.active-mouse,
+.vm-state-stop.active-mouse,
+.vm-state-suspend.active-mouse,
+.vm-state-reset.active-mouse,
+.vm-state-start.active,
+.vm-state-stop.active,
+.vm-state-suspend.active,
+.vm-state-reset.active {
+        border: 1px solid;
+        border-left-color: white;
+        border-top-color: white;
+        border-bottom: #a0a0a0;
+        border-right-color: #a0a0a0;
+}
+
+.menu-item {
+  	display: inline-block;
+  	position: relative;
+}
+
+.menu-item span {
+  	cursor: pointer;
+  	position: relative;
+  	display: inline-block;
+  	padding: 1px 3px;
+  	position: relative;
+  	line-height: 17px;
+  	height: 18px;
+  	border: 1px solid transparent;
+  	border-bottom: 0;
+  	z-index: 3;
+  	-webkit-user-select: none;
+  	-moz-user-select: none;
+  	-ms-user-select: none;
+}
+
+.menu-item.active span {
+  	background-color: #f9f9f9;
+  	border-color: #808080;
+}
+
+.item-item.active {
+        background-color: #c4e1ff;
+        border-color: #3399ff;
+}
+
+.menu-item.active ul {
+  	display: block;
+}
+
+.menu-item.active ul li:hover {
+        background-color: #c4e1ff;
+        border-color: #3399ff;
+}
+
+.menu-item ul {
+  	background-color: #fdfdfd;
+  	list-style: none;
+  	padding: 1px 5px 2px 25px;
+  	margin: 0;
+  	position: absolute;
+  	z-index: 2;
+  	left: 0px;
+  	top: 20px;
+  	width: 200px;
+  	border: 1px solid #808080;
+  	display: none;
+}
+
+.toggle-link {
+  	display: block;
+  	position: relative;
+  	padding-left: 18px;
+}
+
+
+.toggle-link:before {
+  	content: '+';
+  	display: block;
+  	border-radius: 2px;
+  	height: 9px;
+  	width: 9px;
+  	border: 1px solid #000;
+  	position: absolute;
+  	top: 4px;
+	left: 4px;
+  	text-align: center;
+  	line-height: 7px;
+  	font-size: 12px;
+}
+
+.toggle-link.active:before {
+  	content: '-';
+}
+
+.navigation-panel {
+    	margin-left: 8px;
+	width: 100%;
+}
+
+#image {
+	display: inline-block;
+	vertical-align: middle;
+}
+
+.menu {
+	height: 26px;
+	display: inline-block;
+	margin-left: 10px;
+    	width: 94%;
+    	background-color: white;
+    	border: 1px solid #a0a0a0;
+}
+
+.vm-control-panel {
+	display: inline-block;
+	vertical-align: middle;
+	margin-left: 2px;
+	margin-top: 3px;
+}
+
+.main-area {
+    	margin-left: 4px;
+    	width: 100%;
+	height: 440px;
+}
+
+.bottom-area {
+	font-weight: bold;
+        margin-left: 4px;
+}
+
+.h-line {
+    	margin-bottom: 3px;
+	margin-top: 3px;
+   	width: 100%;
+	height: 1px;
+	background-color: #a0a0a0;
+}
+
+.v-line {
+    display: inline-block;
+    vertical-align: middle;
+    width: 1px;
+    height: 26px;
+    background-color: #a0a0a0;
+}
+
+.left-block {
+	display: inline-block;
+	vertical-align: middle;
+    	width: 15%;
+	height: 400px;
+	background-color: white;
+        border: 1px solid #a0a0a0;
+        box-shadow: -1px -1px #696969;
+	overflow: auto;
+}
+
+.right-block {
+	display: inline-block;
+	vertical-align: middle;
+    	margin-left: 2px;
+    	width: 84%;
+	height: 400px;
+	background-color: #39516b;
+    	border: 1px solid #a0a0a0;
+    	box-shadow: -1px -1px #696969;
+}
+
+.right-block-inside {
+        height: 350px;
+	margin-top: 26px;
+        background-color: white;
+}
+
+.home-block {
+	margin-top: 5px;
+    	width: 100%;
+	height: 400px;
+	background-color: white;
+	border: 1px solid #a0a0a0;
+    	box-shadow: -1px -1px #696969;
+}
+
+.login-up-box {
+	margin-left: 30%;
+	margin-right: 30%;
+        margin-top: 10%;
+        height: 285px;
+	background: #f0f0f0;
+	border: 1px solid #5e8dc9;
+}
+
+.login-form {
+	margin-left: 45px;
+	width: 245px;
+}
+
+.login-input {
+        margin-left: 10px;
+	float: right;
+}
+
+.error-list {
+	display: block;
+	color: red;
+	height: 5px;
+}}
+
