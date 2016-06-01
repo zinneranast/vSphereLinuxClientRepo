@@ -91,19 +91,63 @@ $(document).ready(function() {
 
   $('.toggle-link').on('click', function() {
     $(this).next('.toggle-content').slideToggle(100);
+    $('.vm-state-start').removeClass('active');
+    $('.vm-state-stop').removeClass('active');
+    $('.vm-state-suspend').removeClass('active');
+
+    $.ajax({
+        method: 'POST',
+        url: '/vsphclient/index/',
+        data: {},
+        success: function (data) {
+          $('.right-block').html($(data).find('.right-block').html());
+        }
+      });
   });
 
   var vmid;
   var vmname;
+  var vmstate;
   var prev2;
   $('.toggle-content').on('click', '.item', function() {
     vmid = $(this).data('vmid');
     vmname = $(this).data('vmname');
+    vmstate = $(this).data('vmstate');
+
+    if(vmstate == "Powered on") {
+      $('.vm-state-start').addClass('active');
+      $('.vm-state-stop').removeClass('active');
+      $('.vm-state-suspend').removeClass('active');
+      $('.vm-state-reset').removeClass('active');
+    }else if(vmstate == "Powered off") {
+      $('.vm-state-stop').addClass('active');
+      $('.vm-state-start').removeClass('active');
+      $('.vm-state-suspend').removeClass('active');
+      $('.vm-state-reset').removeClass('active');
+    }else if(vmstate == "Suspend") {
+      $('.vm-state-suspend').addClass('active');
+      $('.vm-state-start').removeClass('active');
+      $('.vm-state-stop').removeClass('active');
+      $('.vm-state-reset').removeClass('active');
+    }
+
     if (prev2 != undefined) {
       prev2.removeClass('active');
     }
     $(this).addClass('active');
     prev2 = $(this);
+
+    $.ajax({
+      method: 'POST',
+      url: '/vsphclient/summary/',
+      data: {'machine_id': vmid, 'machine_name': vmname, 'machine_state': vmstate},
+      success: function (data) {
+        $('.right-block').html($(data).find('.right-block').html());
+      },
+      error: function (data) {
+        alert("ERROR: Something was going wrong while reseting virtual machine.");
+      }
+    });
   });
 
 
@@ -121,22 +165,7 @@ $(document).ready(function() {
     }
     prev3 = $(this);
   });
-
-  var prev4;
-  $('.item-item span').on('click', function() {
-    var $el = $(this).parent('.item-item');
-    if($el.hasClass('active')) {
-      $el.removeClass('active');
-    } else {
-      if(prev4 != undefined) {
-        prev4.parent('.item-item').removeClass('active');
-      }
-      prev4 = $(this);
-      $el.addClass('active');
-    }
-    prev4 = $(this);
-  });
-
+  
   $('.item-item').on('mouseover', function() {
     $(this).addClass('active');
   });
@@ -145,17 +174,27 @@ $(document).ready(function() {
     $(this).removeClass('active');
   });
 
-    $('.item-item-item').on('mouseover', function() {
-    $(this).addClass('active');
+  $('.menu-list-item').on('click', function() {
+    var subist = $(this).find('.menu-sublist');
+    if ( subist.length ) {
+      subist.addClass('active');
+    }    
   });
 
-  $('.item-item-item').on('mouseout', function() {
-    $(this).removeClass('active');
+  $(document).on('click', function(e){
+    if( !$(e.target).hasClass('item-item') &&
+      !$(e.target).hasClass('menu-list-item') ) {    
+        $('.menu-item, .menu-sublist').each(function(){
+          $(this).removeClass('active');
+        });   
+      }
   });
 
 
   $('.vm-state-start').on('click', function() {
     $(this).addClass('active');
+    $('.operation-history tr:first-child .status').html('<th style="width: 133px;"><div class="meter"><span>complete</span></div></th>');
+    console.log($('.operation-history tr:first-child .status'))
     $.ajax({
       method: 'POST',
       url: '/vsphclient/startmachine/',
@@ -163,6 +202,8 @@ $(document).ready(function() {
       success: function (data) {
         $('.toggle-content').html($(data).find('.toggle-content').html());
         $('.operation-history').html($(data).find('.operation-history').html());
+        $('.vm-state-start').removeClass('active');
+        // $('.status').html('<th id="status" style="width: 133px;"><img src="{% static "img/complete.png" %}" id="image">Completed</th>');
       },
       error: function (data) {
         alert("ERROR: Something was going wrong while starting virtual machine.");
@@ -179,11 +220,15 @@ $(document).ready(function() {
       success: function (data) {
         $('.toggle-content').html($(data).find('.toggle-content').html());
         $('.operation-history').html($(data).find('.operation-history').html());
+        $('.vm-state-stop').removeClass('active');
       },
       error: function (data) {
         alert("ERROR: Something was going wrong while stopping virtual machine.");
       }
     });
+    $('.vm-state-start').removeClass('active');
+    $('.vm-state-suspend').removeClass('active');
+    $('.vm-state-reset').removeClass('active');
   });
 
   $('.vm-state-suspend').on('click', function() {
@@ -195,11 +240,15 @@ $(document).ready(function() {
       success: function (data) {
         $('.toggle-content').html($(data).find('.toggle-content').html());
         $('.operation-history').html($(data).find('.operation-history').html());
+        $('.vm-state-suspend').removeClass('active');
       },
       error: function (data) {
         alert("ERROR: Something was going wrong while suspending virtual machine.");
       }
     });
+    $('.vm-state-start').removeClass('active');
+    $('.vm-state-stop').removeClass('active');
+    $('.vm-state-reset').removeClass('active');
   });
 
   $('.vm-state-reset').on('click', function() {
@@ -211,11 +260,54 @@ $(document).ready(function() {
   	  success: function (data) {
         $('.toggle-content').html($(data).find('.toggle-content').html());
         $('.operation-history').html($(data).find('.operation-history').html());
+        $('.vm-state-reset').removeClass('active');
       },
       error: function (data) {
         alert("ERROR: Something was going wrong while reseting virtual machine.");
       }
     });
+    $('.vm-state-stop').removeClass('active');
+  });
+
+
+  var deploy_buttons = new Array();
+  deploy_buttons.push({
+    text: 'Cancel',
+    click: function() {
+      $('#topology-deploy').removeClass('active');
+      $(this).dialog('close');
+    }
+  });
+
+  var topology;
+  deploy_buttons.push({
+    text: 'OK',
+    click: function() {
+      $(this).removeClass('active');
+      alert("The process was started. Please do not update the page until the configuration is deployed.");
+      $.ajax({
+        method: 'POST',
+        url: '/vsphclient/deploy/',
+        data: $(this).serialize() + '&topology_name=' + topology,
+        success: function (data) {
+          alert(data);
+        },
+        error: function (data) {
+          alert("ERROR: Something was going wrong while deploying the configuration.");
+        }
+      });
+      $(this).dialog('close');
+    }
+  });
+
+  $('#deploy-form').dialog({
+     autoOpen: false,
+     buttons: deploy_buttons
+  });
+
+  $('#topology-deploy').on('click', function (){
+      $(this).addClass('active');
+      $('#deploy-form').dialog('open');
   });
 
 
@@ -240,6 +332,7 @@ $(document).ready(function() {
         data: $(this).serialize() + '&machine_id=' + vmid + '&machine_name=' + vmname,
         success: function (data) {
           $('.operation-history').html($(data).find('.operation-history').html());
+          $('.take-snapshot').removeClass('active');
         },
         error: function (data) {
           alert("ERROR: Something was going wrong while creating snapshot.");
@@ -264,7 +357,7 @@ $(document).ready(function() {
   revert_snapshot_buttons.push({
     text: 'Cancel',
     click: function() {
-      $(this).removeClass('active');
+      $('.revert-snapshot').removeClass('active');
       $(this).dialog('close');
     }
   });
@@ -279,6 +372,7 @@ $(document).ready(function() {
         data: {'machine_id': vmid, 'machine_name': vmname},
         success: function (data) {
           $('.operation-history').html($(data).find('.operation-history').html());
+          $('.revert-snapshot').removeClass('active');
         },
         error: function (data) {
           alert("ERROR: Something was going wrong while reverting the virtual machine to the current snapshot.");
@@ -289,9 +383,9 @@ $(document).ready(function() {
   });
 
   $('#revert-snapshot-form').dialog({
-      autoOpen: false,
-      buttons: revert_snapshot_buttons
-    });
+    autoOpen: false,
+    buttons: revert_snapshot_buttons
+  });
 
   $('.revert-snapshot').on('click', function() {
     $(this).addClass('active');
@@ -312,28 +406,143 @@ $(document).ready(function() {
     text: 'OK',
     click: function() {
       $(this).removeClass('active');
-      $(this).dialog('close');
-    }
-  });
-
-  $('#manager-snapshot-form').dialog({
-      autoOpen: false,
-      buttons: manager_snapshot_buttons
-  });
-
-  $('.manager-snapshot').on('click', function() {
-    $(this).addClass('active');
-    $.ajax({
+      $.ajax({
         method: 'POST',
         url: '/vsphclient/managersnapshot/',
         data: {'machine_id': vmid, 'machine_name': vmname},
         success: function (data) {
-          $('.snapshot-info').html(data);
+          $('.snapshot-info').html($(data).find('.snapshot-info').html());
+          $('.manager-snapshot').removeClass('active');
         },
         error: function (data) {
           alert("ERROR: Something was going wrong while getting information about snapshots.");
         }
       });
-    $('#manager-snapshot-form').dialog('close');
-  });  
+      $(this).dialog('close');
+    }
+  });
+
+  $('#manager-snapshot-form').dialog({
+    autoOpen: false,
+    buttons: manager_snapshot_buttons
+  });
+
+  $('.manager-snapshot').on('click', function() {
+    $(this).addClass('active');
+    $('#manger-snapshot-form').dialog('open');
+  });
+
+
+  $('#switch-manager').on('click', function() {
+    $.ajax({
+      method: 'POST',
+      url: '/vsphclient/switchmanager/',
+      data: {},
+      success: function (data) {
+        $('.right-block').html($(data).find('.right-block').html());
+      },
+      error: function (data) {
+        alert("ERROR: Something was going topologywrong while getting information about virtual swithes.");
+      }
+    });
+  });
+
+
+  // $('#cpu-use').on('click', function() {
+  //   $.ajax({
+  //     method: 'POST',
+  //     url: '/vsphclient/cpuuse/',
+  //     data: {},
+  //     success: function (data) {
+  //       $('.right-block').html($(data).find('.right-block').html());
+  //     },
+  //     error: function (data) {
+  //       alert("ERROR: Something was going wrong while getting information.");
+  //     }
+  //   });
+  // });
+
+
+  // $('#memory-use').on('click', function() {
+  //   $.ajax({
+  //     method: 'POST',
+  //     url: '/vsphclient/memoryuse/',
+  //     data: {},
+  //     success: function (data) {
+  //       $('.right-block').html($(data).find('.right-block').html());
+  //     },
+  //     error: function (data) {
+  //       alert("ERROR: Something was going wrong while getting information.");
+  //     }
+  //   });
+  // });
+
+
+  // $('#disk-use').on('click', function() {
+  //   $.ajax({
+  //     method: 'POST',
+  //     url: '/vsphclient/diskuse/',
+  //     data: {},
+  //     success: function (data) {
+  //       $('.right-block').html($(data).find('.right-block').html());
+  //     },
+  //     error: function (data) {
+  //       alert("ERROR: Something was going wrong while getting information.");
+  //     }
+  //   });
+  // });
+
+
+  // $('#network-use').on('click', function() {
+  //   $.ajax({
+  //     method: 'POST',
+  //     url: '/vsphclient/networkuse/',
+  //     data: {},
+  //     success: function (data) {
+  //       $('.right-block').html($(data).find('.right-block').html());
+  //     },
+  //     error: function (data) {
+  //       alert("ERROR: Something was going wrong while getting information.");
+  //     }
+  //   });
+  // });
+
+
+  var add_switch_buttons = new Array();
+  add_switch_buttons.push({
+    text: 'Cancel',
+    click: function() {
+      $(this).dialog('close');
+    }
+  });
+
+  add_switch_buttons.push({
+    text: 'OK',
+    click: function() {
+      $(this).removeClass('active');
+      $.ajax({
+        method: 'POST',
+        url: '/vsphclient/addswitch/',
+        data: $(this).serialize(),
+        success: function (data) {
+          $('.operation-history').html($(data).find('.operation-history').html());
+          $('.right-block').html($(data).find('.right-block').html());
+        },
+        error: function (data) {
+          alert("ERROR: Something was going wrong while creating virtual switch.");
+        }
+      });
+      $(this).dialog('close');
+    }
+  });
+
+  $('#add-switch-form').dialog({
+    autoOpen: false,
+    buttons: add_switch_buttons
+  });
+
+  $('.add-switch').on('click', function (){
+    console.log("we are here")
+    $('#add-switch-form').dialog('open');
+  });
 });

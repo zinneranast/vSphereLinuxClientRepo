@@ -74,11 +74,11 @@
 				{% endif %}		
 				{% if "Suspend" in value %}
 				<img src="{% static "img/vm-pause.png" %}" id="image">	
-				{% endif %}	
+				{% endif %}
 				{% for key1, value1 in virt_ids.items %}
 					{% if key1 == key %}
 						{% if group != "Read-only" %}
-						<span class="item" data-vmid={{ value1 }} data-vmname={{ key }}>{{ key }}</span><br>
+						<span class="item" data-vmid={{ value1 }} data-vmname={{ key }} data-vmstate="{{ value }}">{{ key }}</span><br>
 						{% else %}
 						<span class="item-readonly">{{ key }}</span><br>
 						{% endif %}
@@ -91,24 +91,107 @@
 <div class="right-block">
 	<span style="display: inline-block; color: white; font-weight: bold; margin-left: 6px; margin-top: 6px;">localhost.localdomain VMware ESXi, 5.5.0</span>
 	<div class="right-block-inside">
-		<span style="display: inline-block; font-size: 15px; font-family: arial; margin-left: 15px; margin-top: 30px; display: inline-block;">
-		<span style="font-weight: bold;">What is a Host?</span>
-			<p style="margin-bottom: 6px;">A host is a computer that uses virtualization software, such 
-			<br>as ESX or ESXi, to run virtual machines. Host provides the 
-			<br>CPU and memory resources that virtual machines use and 
-			<br>give virtual machine accsess to storage and network 
-			<br>connectivity.</p>
-			<p style="margin-top: 8px; margin-bottom: 6px;">Create you own scripts to automate you activity in host.</p>
-		</span>
-		<span style="margin-left: 40px;"><img src="{% static "img/scheme.png" %}" id="image"></span>
+		{% if summary %}
+		<div class="summary">
+		<div class="summary-header"><span>Summary</span></div>
+			<div class="summary-content">
+				Guest OS:<span style="padding-left: 28px;">{{ summary.0 }}</span><br>
+				VM Version:<span style="padding-left: 16px;">{{ summary.1 }}</span><br>
+				CPU:<span style="padding-left: 54px;">1vCPU</span><br>
+				Memory:<span style="padding-left: 32px;">{{ summary.2 }} MB</span><br><br>
+				State:<span style="padding-left: 49px;">{{ machine_state }}</span><br><br>
+				Storage:<span style="padding-left: 35px;">The Datastore</span><br>
+				Network:<span style="padding-left: 31px;">{{ summary.3 }}</span></pre>
+			</div>
+		</div>
+		{% else %}
+			{% if switch_list %}
+				<span class="add-switch">Add networking</span>
+				<div class="switch-manager">
+					<div class="switch-manager-header"><span>Virtual Switches</span></div>
+					<div class="switch-manager-content">
+						{% for i in switch_list %}
+						{% if i == "" %}
+						<pre style="margin-bottom: 10px;">{{ i }}</pre>
+						{% endif %}
+						<pre>{{ i }}</pre>
+						{% endfor %}
+					</div>					
+				</div>
+			{% else %}
+				{% if cpu_use %}
+				<div class="resource-use">
+					<div class="resource-header"><span>CPU Usage</span></div>
+					<div class="resource-content">
+						{{ cpu_use }}
+					</div>					
+				</div>
+				{% else %}
+					{% if memory_use %}
+						<div class="resource-use">
+							<div class="resource-header"><span>Memory Usage</span></div>
+							<div class="resource-content">
+								{{ memory_use }}
+							</div>					
+						</div>
+					{% else %}
+						{% if disk_use %}
+							<div class="resource-use">
+								<div class="resource-header"><span>Disk Usage</span></div>
+								<div class="resource-content">
+									{{ disk_use }}
+								</div>					
+							</div>
+						{% else %}
+							{% if network_use %}
+								<div class="resource-use">
+									<div class="resource-header"><span>Network Usage</span></div>
+									<div class="resource-content">
+										{{ network_use }}
+									</div>					
+								</div>
+							{% else %}
+								<span style="display: inline-block; font-size: 15px; font-family: arial; margin-left: 15px; margin-top: 30px; display: inline-block;">
+									<span style="font-weight: bold;">What is a Host?</span>
+										<p style="margin-bottom: 6px;">A host is a computer that uses virtualization software, such 
+										<br>as ESX or ESXi, to run virtual machines. Host provides the 
+										<br>CPU and memory resources that virtual machines use and 
+										<br>give virtual machine accsess to storage and network 
+										<br>connectivity.</p>
+										<p style="margin-top: 8px; margin-bottom: 6px;">Create you own scripts to automate you activity in host.</p>
+									</span>
+								<span style="margin-left: 40px;"><img src="{% static "img/scheme.png" %}" id="image"></span>
+							{% endif %}
+						{% endif %}
+					{% endif %}
+				{% endif %}
+			{% endif %}
+		{% endif %}
 	</div>
 </div>
 {% endblock %}
 
 {% block recent-tasks %}
-<div class="operation-history">
-{% for i in operation_history %}
-{{ i }}<br>
-{% endfor %}
+	<table cellspacing="0">
+		<tr style="background-image: linear-gradient(to bottom, #c8c8c8, #f7f7f7)">
+			<th style="border: 1px solid #c0c0c0; width: 250px;";>Name</th>
+			<th style="border: 1px solid #c0c0c0; width: 200px;">Target</th>
+			<th style="border: 1px solid #c0c0c0; width: 130px;">Status</th>
+			<th style="border: 1px solid #c0c0c0; width: 160px;">Initiated by</th>
+			<th style="border: 1px solid #c0c0c0">Completed time</th>
+		</tr>
+	</table>
+<div class="operation-history" style="overflow: auto; height: 100px;">
+	<table cellspacing="0">
+		{% for i in operation_history %}
+		<tr>
+			<th style="width: 253px;"><img src="{% static "img/load.png" %}" id="image"><span style="padding-left: 7px;">{{ i.0 }}</span></th>
+			<th style="width: 201px;">{{ i.1 }}</th>
+			<th class="status" style="width: 133px;"><img src="{% static "img/complete.png" %}" id="image"><span style="padding-left: 4px;">Completed</span></th>
+			<th style="width: 163px;">{{ i.2 }}</th>
+			<th>{{ i.3 }}</th>
+		</tr>
+		{% endfor %}
+	</table>
 </div>
 {% endblock %}

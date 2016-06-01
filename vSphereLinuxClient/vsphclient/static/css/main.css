@@ -1,6 +1,6 @@
 @charset "utf-8";
 @font-face {
-	font-family: "Microsoft New Tai Lui";
+	font-family: "Times New Roman", "Microsoft New Tai Lui";
 	src: url('fonts/ntailu.ttf') format('truetype'); 
  	font-style: normal;
 	font-weight: normal;
@@ -12,11 +12,120 @@ body {
 	font-size: 12px;
 	font-family: "Microsoft New Tai Lui", Ebrima;
 	background: #f0f0f0;
+	color: black;
+    overflow: hidden;
 }
 
 a { 
 	text-decoration: none;
 } 
+
+table {	
+    background-color: white;  
+    width: 100%;
+}
+
+th {
+	font-weight: normal;
+	text-align: left;
+    padding-left: 3px;
+}
+
+pre {
+	margin: 0px;
+}
+
+.switch-manager {
+	display: inline-block;
+    margin-top: 12px;
+    margin-left: 8px;
+    margin-bottom: 6px;
+    border: 1px solid #a0a0a0;
+}
+
+.switch-manager-header {
+	display: inline-block;
+    border-bottom: 1px solid #a0a0a0;
+    width: 100%;
+    height: 19px;
+    margin-top: 1px;
+    background-image: linear-gradient(to bottom, #a0a0a0, #e9eaeb);
+    font-weight: bold;
+}
+
+.switch-manager-header span {
+	display: inline-block;
+    margin-left: 10px;
+    color: #0f3f6d;
+}
+
+.switch-manager-content {
+	display: inline-block;
+	margin-top: 4px;
+    margin-left: 10px;
+    margin-bottom: 6px;
+}
+
+.add-switch {
+	display: inline-block;
+	margin-top: 10px;
+    margin-left: 10px;
+    margin-bottom: 6px;
+}
+
+.summary {
+	display: inline-block;
+    margin-top: 12px;
+    margin-left: 8px;
+    border: 1px solid #a0a0a0;
+}
+
+.summary-header {
+	display: inline-block;
+    border-bottom: 1px solid #a0a0a0;
+    width: 100%;
+    height: 19px;
+    margin-top: 1px;
+    background-image: linear-gradient(to bottom, #a0a0a0, #e9eaeb);
+    font-weight: bold;
+}
+
+.summary-header span {
+	display: inline-block;
+    margin-left: 10px;
+    color: #0f3f6d;
+}
+
+.summary-content {
+	display: inline-block;
+	margin-top: 4px;
+    margin-left: 10px;
+    margin-bottom: 6px;
+}
+
+.resource-use {
+	display: inline-block;
+    margin-top: 12px;
+    margin-left: 8px;
+    border: 1px solid #a0a0a0;
+}
+
+.resource-use-header {
+	display: inline-block;
+    border-bottom: 1px solid #a0a0a0;
+    width: 100%;
+    height: 19px;
+    margin-top: 1px;
+    background-image: linear-gradient(to bottom, #a0a0a0, #e9eaeb);
+    font-weight: bold;
+}
+
+.resource-use-content {
+	display: inline-block;
+	margin-top: 4px;
+    margin-left: 10px;
+    margin-bottom: 6px;
+}
 
 .upper-panel {
 	margin-top: 4px;
@@ -25,19 +134,24 @@ a {
 	height: 26px;
 }
 
+.recent-tasks {
+    margin-bottom: 4px;
+    margin-top: 8px;
+}
+
 #file-button {
 	display: inline-block;
 	width: 28px;
 }
 
-#view-button {
+#configuration-button {
 	display: inline-block;
-	width: 38px;
+	width: 82px;
 }
 
-#inventory-button {
-  display: inline-block;
-  width: 58px;
+#topology-button {
+  	display: inline-block;
+  	width: 58px;
 }
 
 #administration-button {
@@ -50,12 +164,13 @@ a {
 }
 
 .item-readonly {
-  cursor: pointer;
+  	cursor: pointer;
 }
 
 .item.active {
-  background-color: #b0c4de;
-  border: 1px solid #4682b4;
+  	background-color: #b0c4de;
+  	border: 1px solid #4682b4;
+    cursor: pointer;
 }
 
 .vm-state,
@@ -66,8 +181,8 @@ a {
 .take-snapshot,
 .revert-snapshot,
 .manager-snapshot {
-  display: inline-block;
-  cursor: pointer;
+  	display: inline-block;
+  	cursor: pointer;
 }
 
 .vm-state-start.active-mouse,
@@ -77,11 +192,11 @@ a {
 .take-snapshot.active-mouse,
 .revert-snapshot.active-mouse,
 .manager-snapshot.active-mouse {
-  border: 1px solid;
-  border-left-color: white;
-  border-top-color: white;
-  border-bottom: #a0a0a0;
-  border-right-color: #a0a0a0;
+	border: 1px solid;
+	border-left-color: white;
+	border-top-color: white;
+	border-bottom: #a0a0a0;
+	border-right-color: #a0a0a0;
 }
 
 .vm-state-start.active,
@@ -91,11 +206,11 @@ a {
 .take-snapshot.active,
 .revert-snapshot.active,
 .manager-snapshot.active {
-  border: 1px solid;
-  border-left-color: #a0a0a0;
-  border-top-color: #a0a0a0;
-  border-bottom: white;
-  border-right-color: white;
+  	border: 1px solid;
+  	border-left-color: #a0a0a0;
+  	border-top-color: #a0a0a0;
+ 	border-bottom: white;
+ 	border-right-color: white;
 }
 
 .menu-item {
@@ -122,20 +237,24 @@ a {
 .menu-item.active span {
 	background-color: #f9f9f9;
 	border-color: #808080;
+    cursor: pointer;
 }
 
 .item-item.active {
-  background-color: #c4e1ff;
-  border-color: #3399ff;
+  	background-color: #c4e1ff;
+  	border-color: #3399ff;
+    cursor: pointer;
 }
 
-.menu-item.active ul {
+.menu-item.active .menu-list {
 	display: block;
 }
 
 .menu-item.active ul li:hover {
-  background-color: #c4e1ff;
-  border-color: #3399ff;
+  	background-color: #c4e1ff;
+  	border-color: #3399ff;
+	height: 20px;
+    cursor: pointer;
 }
 
 .menu-item ul {
@@ -147,9 +266,22 @@ a {
 	z-index: 2;
 	left: 0px;
 	top: 20px;
-	width: 200px;
 	border: 1px solid #808080;
 	display: none;
+	-webkit-padding-start: 0px;
+}
+
+.menu-list-item {
+	text-align: right;
+	height: 20px;
+}
+
+.menu-sublist li {
+	height: 20px;	
+}
+
+.menu-list li {
+	height: 20px;	
 }
 
 .toggle-link {
@@ -175,11 +307,11 @@ a {
 }
 
 .toggle-link.active:before {
-  content: '-';
+  	content: '-';
 }
 
 .navigation-panel {
-  margin-left: 8px;
+  	margin-left: 8px;
 	width: 100%;
 }
 
@@ -189,8 +321,8 @@ a {
 }
 
 #image-alert {
-  float: left;
-  margin: 2px 8px 2px 0px;
+  	float: left;
+  	margin: 2px 8px 2px 0px;
 }
 
 .menu {
@@ -207,17 +339,18 @@ a {
 	vertical-align: middle;
 	margin-left: 2px;
 	margin-top: 3px;
+	height: 25px;
 }
 
 .main-area {
-  margin-left: 4px;
-  width: 100%;
-	height: 440px;
+ 	margin-left: 4px;
+  	width: 100%;
+	height: 415px;
 }
 
 .bottom-area {
-	font-weight: bold;
-  margin-left: 4px;
+  	margin-left: 4px;
+  	height: 162px;
 }
 
 .h-line {
@@ -229,55 +362,56 @@ a {
 }
 
 .v-line {
-  display: inline-block;
-  vertical-align: middle;
-  width: 1px;
-  height: 26px;
-  background-color: #a0a0a0;
+ 	display: inline-block;
+  	vertical-align: middle;
+  	width: 1px;
+  	height: 26px;
+  	background-color: #a0a0a0;
 }
 
 .left-block {
 	display: inline-block;
 	vertical-align: middle;
-  width: 15%;
-	height: 400px;
+  	width: 15%;
+	height: 370px;
 	background-color: white;
-  border: 1px solid #a0a0a0;
-  box-shadow: -1px -1px #696969;
+	border: 1px solid #a0a0a0;
+	box-shadow: -1px -1px #696969;
 	overflow: auto;
 }
 
 .right-block {
 	display: inline-block;
 	vertical-align: middle;
-  margin-left: 2px;
-  width: 84%;
-	height: 400px;
+  	margin-left: 2px;
+ 	width: 84%;
+	height: 370px;
 	background-color: #39516b;
-  border: 1px solid #a0a0a0;
-  box-shadow: -1px -1px #696969;
+ 	border: 1px solid #a0a0a0;
+ 	box-shadow: -1px -1px #696969;
 }
 
 .right-block-inside {
-  height: 350px;
+  	height: 323px;
 	margin-top: 26px;
-  background-color: white;
+ 	background-color: white;
+ 	overflow: auto;
 }
 
 .home-block {
 	margin-top: 5px;
-  width: 100%;
+  	width: 100%;
 	height: 400px;
 	background-color: white;
-  border: 1px solid #a0a0a0;
+  	border: 1px solid #a0a0a0;
 	box-shadow: -1px -1px #696969;
 }
 
 .login-up-box {
 	margin-left: 30%;
 	margin-right: 30%;
-  margin-top: 10%;
-  height: 285px;
+	margin-top: 10%;
+	height: 285px;
 	background: #f0f0f0;
 	border: 1px solid #5e8dc9;
 }
@@ -288,7 +422,7 @@ a {
 }
 
 .login-input {
-  margin-left: 10px;
+  	margin-left: 10px;
 	float: right;
 }
 
@@ -296,11 +430,88 @@ a {
 	display: block;
 	color: red;
 	height: 5px;
-}}
+}
 
-.operation-history {
+ul.menu-sublist {
+  	left: 100%;
+}
+
+ul.menu-sublist.active {
+ 	display: block;
+}
+
+<div class="meter">
+  <span>complete</span>
+</div>
+
+.meter { 
+  width: 200px; /* u Can change on your size or 100% */
+	height: 14px;  /* Can be anything */
+	position: relative;
+	background: #555;
+	-moz-border-radius: 25px;
+	-webkit-border-radius: 25px;
+	border-radius: 25px;
+	padding: 2px;
+	box-shadow: inset 0 -1px 1px rgba(255,255,255,0.3);
+  text-align: center;
+}
+.meter > span {
   display: block;
-  color: red;
-  height: 5px;
-}}
-
+  height: 100%;
+  width: 125px;
+  border-radius: 20px;
+  background-color: #4483b0; /* this prop for change color from green to blue for example */
+  background-image: linear-gradient(
+    center bottom,
+    rgb(43,194,83) 37%,
+    rgb(84,240,84) 69%
+  );
+  box-shadow: 
+    inset 0 2px 9px  rgba(255,255,255,0.3),
+    inset 0 -2px 6px rgba(0,0,0,0.4);
+  position: relative;
+  overflow: hidden;
+  color: transparent;
+  font-size: 13px; /* this value like meter's height */
+  line-height: 13px;
+}
+.meter > span:after {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; bottom: 0; right: 0;
+  background-image: linear-gradient(
+    -45deg, 
+    rgba(255, 255, 255, .2) 25%, 
+    transparent 25%, 
+    transparent 50%, 
+    rgba(255, 255, 255, .2) 50%, 
+    rgba(255, 255, 255, .2) 75%, 
+    transparent 75%, 
+    transparent
+  );
+  z-index: 1;
+  background-size: 50px 50px;
+  animation: move 2s linear infinite;
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
+  border-top-left-radius: 20px;
+  border-bottom-left-radius: 20px;
+  overflow: hidden;
+}
+.meter.stop > span { /* attention. if u want to stop animation , u should add class 'stop' for meter */
+  color: #fff;
+  background-color: transparent;
+}
+.meter.stop > span:after {
+  animation: none;
+  background-image: none;
+}
+@keyframes move {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 50px 50px;
+  }
+}

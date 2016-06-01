@@ -14,5 +14,13 @@ urlpatterns = [
     url(r'^resetmachine/$', views.resetmachine, name='resetmachine'),
     url(r'^takesnapshot/$', views.takesnapshot, name='takesnapshot'),
     url(r'^revertsnapshot/$', views.revertsnapshot, name='revertsnapshot'),
-    url(r'^managersnapshot/$', views.managersnapshot, name='managersnapshot')
+    url(r'^managersnapshot/$', views.managersnapshot, name='managersnapshot'),
+    url(r'^deploy/$', views.deploy, name='deploy'),
+    url(r'^summary/$', views.summary, name='summary'),
+    url(r'^switchmanager/$', views.switchmanager, name='switchmanager'),
+    url(r'^addswitch/$', views.addswitch, name='addswitch'),
+    url(r'^cpuuse/$', views.cpuuse, name='cpuuse'),
+    url(r'^memoryuse/$', views.memoryuse, name='memoryuse'),
+    url(r'^diskuse/$', views.diskuse, name='diskuse'),
+    url(r'^networkuse/$', views.networkuse, name='networkuse'),
 ]

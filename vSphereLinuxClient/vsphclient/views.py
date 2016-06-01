@@ -16,25 +16,22 @@ def getVMs():
     cmd = """ssh root@192.168.1.101 'vim-cmd vmsvc/getallvms' | awk '{print $1}' | sed 1d"""
     getVmIds = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
     for line in getVmIds.stdout.readlines():
-        line = line.strip()
         if line:
-            vmIds.append(line.decode('cp866'))
+            vmIds.append(line.strip().decode('cp866'))
 
     virtMachines = []
     cmd = """ssh root@192.168.1.101 'vim-cmd vmsvc/getallvms' | awk -F[ '{print $1}' | sed 1d | awk '{$1=""; print $0}' | sed 's/[\t]*$//'"""
     getVirtMachines = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
     for line in getVirtMachines.stdout.readlines():
-        line = line.strip()
         if line:
-            virtMachines.append(line.decode('cp866'))
+            virtMachines.append(line.strip().decode('cp866'))
 
     runVms = []
     cmd = "esxcli --config /home/zinner/graduate-work/session.cfg vm process list"
     getRunVms = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
     for line in getRunVms.stdout.readlines()[0::8]:
-        line = line.strip()
         if line:
-            runVms.append(line.decode('cp866'))
+            runVms.append(line.strip().decode('cp866'))
 
     vmStates = {}
     vmId = {}
@@ -42,7 +39,7 @@ def getVMs():
     for i in virtMachines:
         for j in runVms:
             if i == j:
-                vmStates[virtMachines[k]] = 'Powered on'  
+                vmStates[virtMachines[k]] = 'Powered on'
                 break
             else:
                 # cmd = """ssh root@192.168.1.101 'vim-cmd vmsvc/power.getstate %s'""" % vmIds[k]
@@ -60,18 +57,20 @@ def getVMs():
     return vmStates, vmId
 
 
+def getSwitches():
+    cmd = "vicfg-vswitch --config /home/zinner/graduate-work/session.cfg -l"
+    getSwitchList = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    switch_list = []
+    for line in getSwitchList.stdout.readlines():
+        if line:
+            switch_list.append(line.strip().decode('cp866'))
+    return switch_list
+
 def getVmPath(machine_id):
     cmd = """ssh root@192.168.1.101 'vim-cmd vmsvc/getallvms' | grep "^%s" | awk -F[ '{print $2}' | awk -F.vmx '{print "["$1".vmx"}'""" % machine_id
     getVmPath = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     machine_path = getVmPath.stdout.readline().decode('cp866').strip("\n")
     return machine_path
-
-
-# def getVmName(machine_id):
-#     cmd = """ssh root@192.168.1.101 'vim-cmd vmsvc/getallvms' | grep "^%s" | awk -F[ '{print $1}' | awk '{$1=""; print $0}' | sed 's/[\t]*$//'""" % machine_id
-#     getVmName = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-#     machine_name = getVmName.stdout.readline().decode('cp866').strip("\n")
-#     return machine_name
 
 
 def saveOperation(cmd):
@@ -84,7 +83,23 @@ def getOperationHistory():
     operationHistory = file.readlines()
     file.close()
     operationHistory = operationHistory[::-1]
-    return operationHistory[:5]
+    operations = []
+    operationHistoryList = []
+    for line in operationHistory:
+        if line:
+            operations = re.split(r'   ', line)
+            operationHistoryList.append(operations)
+
+    for i in operationHistoryList:
+        for j in i:
+            print(j, " ")
+        print("\n")
+    return operationHistoryList
+
+
+def clearOperationHistory():
+    file = open("/home/zinner/graduate-work/operationHistory.list", "w")
+    file.close()
 
 
 def login(request):
@@ -99,6 +114,7 @@ def login(request):
             if user.groups.all()[0].name == "Blocked":
                 return redirect('/vsphclient/blocked/', context_instance=RequestContext(request))
             else:
+                clearOperationHistory()
                 return redirect('/vsphclient/index/', context_instance=RequestContext(request))
         else:
             args['login_error'] = "Invalid username or password."
@@ -116,8 +132,8 @@ def logout(request):
 def index(request):
     if request.user.is_authenticated():
         vmStates, vmIds = getVMs()
-        print(vmStates)
-        return render_to_response('index.html', {'virt_states': vmStates, 'virt_ids': vmIds, 'username': auth.get_user(request).username, 'group': auth.get_user(request).groups.all()[0].name}, context_instance=RequestContext(request))
+        operationHistory = getOperationHistory()
+        return render_to_response('index.html', {'virt_states': vmStates, 'virt_ids': vmIds, 'username': auth.get_user(request).username, 'group': auth.get_user(request).groups.all()[0].name, 'operation_history': operationHistory}, context_instance=RequestContext(request))
     else:
         return redirect('/vsphclient/login/', context_instance=RequestContext(request))
 
@@ -139,6 +155,28 @@ def blocked(request):
 
 
 @csrf_exempt
+def summary(request):
+    if request.user.is_authenticated():
+        machine_id = request.POST['machine_id']
+        machine_name = request.POST['machine_name']
+        machine_state = request.POST['machine_state']
+        machine_path = getVmPath(machine_id).replace("[The Datastore] ", "").replace(" ", "\\ ").replace("(", "\\(").replace(")", "\\)")
+        machine_path = "/vmfs/volumes/The\ Datastore/" + machine_path
+
+        if request.is_ajax():
+            summary = []
+            cmd = """/home/zinner/graduate-work/summary.sh \"%s\"""" % machine_path
+            print("cmd=",cmd)
+            getSummary = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            for line in getSummary.stdout.readlines():
+                if line:
+                    summary.append(line.decode('cp866'))
+            return HttpResponse(get_template('index.html').render({'summary': summary, 'machine_state': machine_state}, request))
+    else:
+        return redirect('/vsphclient/login/', context_instance=RequestContext(request))
+
+
+@csrf_exempt
 def startmachine(request):
     if request.user.is_authenticated():
         machine_id = request.POST['machine_id']
@@ -148,8 +186,9 @@ def startmachine(request):
         result = startMachine.stdout.readline().decode('cp866')
         parser = re.search(r'Powering on VM', result)
         if parser is not None:
-            cmd = "Power on virtual machine - %s - %s - %s" % (machine_name, auth.get_user(request), datetime.now())
-            saveOperation(cmd)
+            op_name = "Power on virtual machine"
+            cmd = op_name + "   " + machine_name + "   %s   %s" % (auth.get_user(request), datetime.now())
+            saveOperation(cmd)            
             if request.is_ajax():
                 vmStates, vmIds = getVMs()
                 operationHistory = getOperationHistory()
@@ -168,7 +207,8 @@ def stopmachine(request):
         result = stopMachine.stdout.readline().decode('cp866')
         parser = re.search(r'Powering off VM', result)
         if parser is not None:
-            cmd = "Power off virtual machine - %s - %s - %s" % (machine_name, auth.get_user(request), datetime.now())
+            op_name = "Power off virtual machine"
+            cmd = op_name + "   " + machine_name + "   %s   %s" % (auth.get_user(request), datetime.now())
             saveOperation(cmd)
             if request.is_ajax():
                 vmStates, vmIds = getVMs()
@@ -188,8 +228,8 @@ def suspendmachine(request):
         result = suspendMachine.stdout.readline().decode('cp866')
         parser = re.search(r'Suspending VM', result)
         if parser is not None:
-            cmd = "Suspend virtual machine - %s - %s - %s" % (machine_name, auth.get_user(request), datetime.now())
-            saveOperation(cmd)
+            op_name = "Suspend virtual machine"
+            cmd = op_name + "   " + machine_name + "   %s   %s" % (auth.get_user(request), datetime.now())
             if request.is_ajax():
                 vmStates, vmIds = getVMs()
                 operationHistory = getOperationHistory()
@@ -208,7 +248,8 @@ def resetmachine(request):
         result = resetMachine.stdout.readline().decode('cp866')
         parser = re.search(r'Reset VM', result)
         if parser is not None:
-            cmd = "Reset virtual machine - %s - %s - %s" % (machine_name, auth.get_user(request), datetime.now())
+            op_name = "Reset virtual machine"
+            cmd = op_name + "   " + machine_name + "   %s   %s" % (auth.get_user(request), datetime.now())
             saveOperation(cmd)
             if request.is_ajax():
                 vmStates, vmIds = getVMs()
@@ -232,7 +273,8 @@ def takesnapshot(request):
         result = createSnapshot.stdout.readline().decode('cp866')
         parser = re.search(r'createsnapshot', result)
         if parser is not None:
-            cmd = "Create virtual machine snapshot - %s - %s - %s" % (machine_name, auth.get_user(request), datetime.now())
+            op_name = "Create virtual machine snapshot"
+            cmd = op_name + "   " + machine_name + "   %s   %s" % (auth.get_user(request), datetime.now())
             saveOperation(cmd)
             if request.is_ajax():
                 operationHistory = getOperationHistory()
@@ -252,7 +294,8 @@ def revertsnapshot(request):
         result = revertSnapshot.stdout.readline().decode('cp866')
         parser = re.search(r'revertsnapshot', result)
         if parser is not None:
-            cmd = "Revert to current snapshot - %s - %s - %s" % (machine_name, auth.get_user(request), datetime.now())
+            op_name = "Revert to current snapshot"
+            cmd = op_name + "   " + machine_name + "   %s   %s" % (auth.get_user(request), datetime.now())
             saveOperation(cmd)
             if request.is_ajax():
                 operationHistory = getOperationHistory()
@@ -276,7 +319,104 @@ def managersnapshot(request):
         else:
             has_snapshot = "The virtual machine has not a snapshot."            
         if request.is_ajax():
-            return HttpResponse(has_snapshot)
+            return HttpResponse(get_template('index.html').render({'has_snapshot': has_snapshot}, request))
     else:
         return redirect('/vsphclient/login/', context_instance=RequestContext(request))
 
+
+@csrf_exempt
+def deploy(request):
+    if_dhcp = 0
+    if_dns = 0
+    if_file = 0
+    if request.user.is_authenticated():
+        topology_name = request.POST['topology_name']
+        if 'if_dhcp' in request.POST:
+            if_dhcp = 1
+        if 'if_dns' in request.POST:
+            if_dns = 1
+        if 'if_file' in request.POST:
+            if_file = 1
+
+        topology_name = topology_name.replace(' ', '')
+        topology_name = "SmallOffice"
+        if request.is_ajax():
+            cmd = """/home/zinner/graduate-work/deploy.sh %s %s %s %s""" % (topology_name, if_dhcp, if_dns, if_file)
+            deployTopology = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            result = deployTopology.stdout.readlines().pop().decode('cp866')
+            parser = re.search(r' = 1', result)
+            if parser is not None:
+                return HttpResponse("Congratilations! The topology was successfully deployed.")
+    else:
+        return redirect('/vsphclient/login/', context_instance=RequestContext(request))
+
+
+@csrf_exempt
+def switchmanager(request):
+    switch_list = getSwitches()
+    if request.is_ajax():
+        return HttpResponse(get_template('index.html').render({'switch_list': switch_list}, request))
+    else:
+        return redirect('/vsphclient/login/', context_instance=RequestContext(request))
+
+
+@csrf_exempt
+def cpuuse(request):
+    cmd = "/home/zinner/graduate-work/getCPU.sh"
+    getCpuUse = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    result = getCpuUse.stdout.readline().decode('cp866')
+    if request.is_ajax():
+        return HttpResponse(get_template('index.html').render({'cpu_use': cpu_use}, request))
+    else:
+        return redirect('/vsphclient/login/', context_instance=RequestContext(request))
+
+
+@csrf_exempt
+def memoryuse(request):
+    cmd = "/home/zinner/graduate-work/getMemory.sh"
+    getMemUse = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    result = getMemUse.stdout.readline().decode('cp866')
+    if request.is_ajax():
+        return HttpResponse(get_template('index.html').render({'memory_use': memory_use}, request))
+    else:
+        return redirect('/vsphclient/login/', context_instance=RequestContext(request))
+
+
+@csrf_exempt
+def diskuse(request):
+    cmd = "/home/zinner/graduate-work/getDisk.sh"
+    getDiskUse = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    result = getDiskUse.stdout.readline().decode('cp866')
+    if request.is_ajax():
+        return HttpResponse(get_template('index.html').render({'disk_use': disk_use}, request))
+    else:
+        return redirect('/vsphclient/login/', context_instance=RequestContext(request))
+
+
+@csrf_exempt
+def networkuse(request):
+    cmd = "/home/zinner/graduate-work/getNetwork.sh"
+    getNetUse = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    result = getNetUse.stdout.readline().decode('cp866')
+    if request.is_ajax():
+        return HttpResponse(get_template('index.html').render({'network_use': network_use}, request))
+    else:
+        return redirect('/vsphclient/login/', context_instance=RequestContext(request))
+
+
+@csrf_exempt
+def addswitch(request):
+    if request.user.is_authenticated():
+        switch_name = request.POST['switch_name']
+        cmd = """vicfg-vswitch --config /home/zinner/graduate-work/session.cfg -a \"%s\"""" % switch_name
+        addSwitch = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        result = addSwitch.stdout.readlines()
+        op_name = "Create virtual switch"
+        cmd = op_name + "   " + switch_name + "   %s   %s" % (auth.get_user(request), datetime.now())
+        saveOperation(cmd)
+        if request.is_ajax():
+            operationHistory = getOperationHistory()
+            switch_list = getSwitches()
+            return HttpResponse(get_template('index.html').render({'operation_history': operationHistory, 'switch_list': switch_list}, request))
+    else:
+        return redirect('/vsphclient/login/', context_instance=RequestContext(request))
